@@ -12,7 +12,7 @@ git clone git@github.com:s3m3dov/prj_basho_blog_backend.git
 ```
 
 ## Conventions
-During the project we will use following conventions for evelopment:
+During the project we will use following conventions for development:
 * [Commit Message Conventions](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Editor & IDE Recommendations
