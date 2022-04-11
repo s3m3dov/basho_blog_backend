@@ -9,7 +9,13 @@ class Database
     public function __construct()
     {
         try {
-            $this->connection = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_DATABASE_NAME);
+            $this->connection = new mysqli(
+                DB_HOST,
+                DB_USERNAME,
+                DB_PASSWORD,
+                DB_DATABASE_NAME,
+                DB_PORT
+            );
 
             if ( mysqli_connect_errno()) {
                 throw new Exception("Could not connect to database.");
