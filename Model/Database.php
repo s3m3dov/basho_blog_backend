@@ -44,7 +44,7 @@ class Database
     /**
      * @throws Exception
      */
-    private function executeStatement($query = "" , $types = "", $params = []): mysqli_stmt
+    protected function executeStatement($query = "" , $types = "", $params = []): mysqli_stmt
     {
         try {
             $stmt = $this->connection->prepare($query);
@@ -54,7 +54,7 @@ class Database
             }
 
             if( $params ) {
-                $stmt->bind_param($types, ...$params);
+                 $stmt->bind_param($types, ...$params);
             }
 
             $stmt->execute();
