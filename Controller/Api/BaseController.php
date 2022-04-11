@@ -72,4 +72,21 @@ class BaseController
         echo $data;
         exit;
     }
+
+    /**
+     * Send API error.
+     *
+     * @param string $errorCode
+     * @param string $errorMessage
+     */
+    #[NoReturn] protected function sendError(
+        string $errorCode="500 Internal Server Error",
+        string $errorMessage="Internal Server Error"
+    )
+    {
+        $this->sendOutput(
+            json_encode(array('message' => $errorMessage)),
+            array('HTTP/1.1 ' . $errorCode)
+        );
+    }
 }

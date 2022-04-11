@@ -17,7 +17,7 @@ class Database
                 DB_PORT
             );
 
-            if ( mysqli_connect_errno()) {
+            if (mysqli_connect_errno()) {
                 throw new Exception("Could not connect to database.");
             }
         } catch (Exception $e) {
@@ -28,10 +28,10 @@ class Database
     /**
      * @throws Exception
      */
-    public function select($query = "" , $params = [])
+    public function select($query = "" , $types = "", $params = [])
     {
         try {
-            $stmt = $this->executeStatement( $query , $params );
+            $stmt = $this->executeStatement($query , $types, $params);
             $result = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
             $stmt->close();
 
@@ -44,17 +44,17 @@ class Database
     /**
      * @throws Exception
      */
-    private function executeStatement($query = "" , $params = []): mysqli_stmt
+    private function executeStatement($query = "" , $types = "", $params = []): mysqli_stmt
     {
         try {
-            $stmt = $this->connection->prepare( $query );
+            $stmt = $this->connection->prepare($query);
 
             if($stmt === false) {
                 throw New Exception("Unable to do prepared statement: " . $query);
             }
 
             if( $params ) {
-                $stmt->bind_param($params[0], $params[1]);
+                $stmt->bind_param($types, ...$params);
             }
 
             $stmt->execute();
