@@ -2,9 +2,9 @@
 class UserController extends BaseController
 {
     /**
-     * "/user/list" Endpoint - Get list of users
+     * "/users/" Endpoint - Get list of users
      */
-    public function listAction()
+    public function Action()
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $arrQueryStringParams = $this->getQueryStringParams();
@@ -13,14 +13,18 @@ class UserController extends BaseController
         $strErrorHeader = '';
         $responseData = null;
 
-        if (strtoupper($requestMethod) == 'GET') {
+        if ($requestMethod == 'GET') {
             try {
                 $userModel = new UserModel();
 
-                $limit = $this->getLimit($arrQueryStringParams);
-                $offset = $this->getOffset($arrQueryStringParams);
-                $arrUsers = $userModel->getUsers(limit:$limit, offset:$offset);
-                $responseData = json_encode($arrUsers);
+                if (isset($arrQueryStringParams['id'])) {
+                    $rawData = $userModel->getUser($arrQueryStringParams['id']);
+                } else {
+                    $limit = $this->getLimit($arrQueryStringParams);
+                    $offset = $this->getOffset($arrQueryStringParams);
+                    $rawData = $userModel->getAllUsers(limit:$limit, offset:$offset);
+                }
+                $responseData = json_encode($rawData);
             } catch (Exception $e) {
                 $strErrorMessage = $e->getMessage().' Something went wrong! Please contact support.';
                 $strErrorHeader = 'HTTP/1.1 500 Internal Server Error';
