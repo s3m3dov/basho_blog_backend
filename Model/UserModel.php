@@ -47,7 +47,7 @@ class UserModel extends Database
     public function updateUser($id, array $input)
     {
         $query = "UPDATE " . self::$users_table .
-            "SET " . self::$user_fullname . "=?, " . self::$user_email . "=?, " . self::$user_password .
+            " SET " . self::$user_fullname . "=?, " . self::$user_email . "=?, " . self::$user_password .
             "=? WHERE " . self::$user_id . "=?";
         $types = str_repeat("s", count($input)) . "i";
         $params = array_merge($input, [$id]);

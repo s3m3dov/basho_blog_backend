@@ -46,7 +46,9 @@ class UserController extends BaseController
             );
         }
     }
-
+    /**
+     * "/users/create" Endpoint - Create a user
+     */
     public function createAction()
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
@@ -80,22 +82,52 @@ class UserController extends BaseController
     }
 
     /**
-    public function updateAction($id)
+     * "/users/update" Endpoint - Update a user
+     */
+    public function updateAction()
     {
-    $result = $this->personGateway->find($id);
-    if (! $result) {
-    return $this->notFoundResponse();
-    }
-    $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-    if (! $this->validatePerson($input)) {
-    return $this->unprocessableEntityResponse();
-    }
-    $this->personGateway->update($id, $input);
-    $response['status_code_header'] = 'HTTP/1.1 200 OK';
-    $response['body'] = null;
-    return $response;
-    }
 
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+        $errorMessage = '';
+        $errorCode = '';
+
+        if ($requestMethod == 'PUT') {
+            try {
+                $input = file_get_contents('php://input');
+                $input = array_values(json_decode($input, true));
+                $userModel = new UserModel();
+                if (isset($arrQueryStringParams['id'])) {
+                    $user = $userModel->getUser($arrQueryStringParams['id']);
+                    if (empty($user)) {
+                        $this->sendError('404 Not Found', 'No data found');
+                    } else {
+                        $userModel->updateUser($arrQueryStringParams['id'], $input);
+                    }
+                } else {
+                    $this->sendError('400 Bad Request', 'User ID is required');
+                }
+
+            } catch (Exception $e) {
+                $errorMessage = $e->getMessage().' Something went wrong! Please contact support.';
+                $errorCode = '500 Internal Server Error';
+            }
+        } else {
+            $errorMessage = 'Method not supported';
+            $errorCode = '422 Unprocessable Entity';
+        }
+
+        // send output
+        if ($errorMessage != '') {
+            $this->sendError($errorCode, $errorMessage);
+        } else {
+            $this->sendOutput(
+                json_encode(array('message' => 'User updated successfully')),
+                array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+            );
+        }
+    }
+    /*
     public function deleteAction($id)
     {
     $result = $this->personGateway->find($id);
