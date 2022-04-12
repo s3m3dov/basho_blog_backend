@@ -127,17 +127,45 @@ class UserController extends BaseController
             );
         }
     }
-    /*
-    public function deleteAction($id)
+
+    public function deleteAction()
     {
-    $result = $this->personGateway->find($id);
-    if (! $result) {
-    return $this->notFoundResponse();
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $arrQueryStringParams = $this->getQueryStringParams();
+        $errorMessage = '';
+        $errorCode = '';
+
+        if ($requestMethod == 'DELETE') {
+            try {
+                $userModel = new UserModel();
+                if (isset($arrQueryStringParams['id'])) {
+                    $user = $userModel->getUser($arrQueryStringParams['id']);
+                    if (empty($user)) {
+                        $this->sendError('404 Not Found', 'No data found');
+                    } else {
+                        $userModel->deleteUser($arrQueryStringParams['id']);
+                    }
+                } else {
+                    $this->sendError('400 Bad Request', 'User ID is required');
+                }
+
+            } catch (Exception $e) {
+                $errorMessage = $e->getMessage().' Something went wrong! Please contact support.';
+                $errorCode = '500 Internal Server Error';
+            }
+        } else {
+            $errorMessage = 'Method not supported';
+            $errorCode = '422 Unprocessable Entity';
+        }
+
+        // send output
+        if ($errorMessage != '') {
+            $this->sendError($errorCode, $errorMessage);
+        } else {
+            $this->sendOutput(
+                null,
+                array('Content-Type: application/json', 'HTTP/1.1 204 No Content')
+            );
+        }
     }
-    $this->personGateway->delete($id);
-    $response['status_code_header'] = 'HTTP/1.1 200 OK';
-    $response['body'] = null;
-    return $response;
-    }
-     */
 }
