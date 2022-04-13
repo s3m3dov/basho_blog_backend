@@ -44,6 +44,21 @@ class Database
     /**
      * @throws Exception
      */
+    public function selectTopRow($query = "", $types = "", $params = []): bool|array|null
+    {
+        try {
+            $stmt = $this->executeStatement($query , $types, $params);
+            $result = $stmt->get_result()->fetch_row();
+            $stmt->close();
+            return $result;
+        } catch (Exception $e) {
+            throw New Exception( $e->getMessage() );
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
     protected function executeStatement($query = "" , $types = "", $params = []): mysqli_stmt
     {
         try {
@@ -53,8 +68,8 @@ class Database
                 throw New Exception("Unable to do prepared statement: " . $query);
             }
 
-            if( $params ) {
-                 $stmt->bind_param($types, ...$params);
+            if($params) {
+                 $stmt->bind_param($types, ...$this->escaped($params));
             }
 
             $stmt->execute();
@@ -63,5 +78,16 @@ class Database
         } catch(Exception $e) {
             throw New Exception( $e->getMessage() );
         }
+    }
+
+    protected function escaped(array $params): array
+    {
+        $escapedParams = [];
+
+        foreach($params as $param) {
+            $escapedParams[] = $this->connection->real_escape_string($param);
+        }
+
+        return $escapedParams;
     }
 }
