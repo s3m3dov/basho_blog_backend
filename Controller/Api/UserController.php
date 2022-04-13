@@ -1,6 +1,10 @@
 <?php
+
+include_once PROJECT_ROOT_PATH . '/Utils/Token.php';
+
 class UserController extends BaseController
 {
+
     /**
      * "/users/" Endpoint - Get list of users or specific user
      */
@@ -18,7 +22,7 @@ class UserController extends BaseController
                 $userModel = new UserModel();
 
                 if (isset($arrQueryStringParams['id'])) {
-                    $rawData = $userModel->getUser($arrQueryStringParams['id']);
+                    $rawData = $userModel->getUser(id:$arrQueryStringParams['id']);
                 } else {
                     $limit = $this->getLimit($arrQueryStringParams);
                     $offset = $this->getOffset($arrQueryStringParams);
@@ -47,9 +51,9 @@ class UserController extends BaseController
         }
     }
     /**
-     * "/users/create" Endpoint - Create a user
+     * "/users/register" Endpoint - Create a user
      */
-    public function createAction()
+    public function registerAction()
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $errorMessage = '';
@@ -57,10 +61,16 @@ class UserController extends BaseController
 
         if ($requestMethod == 'POST') {
             try {
-                $input = file_get_contents('php://input');
-                $input = array_values(json_decode($input, true));
+                $input = json_decode(file_get_contents('php://input'), true);
                 $userModel = new UserModel();
-                $userModel->insertUser($input);
+                if($userModel->countUsersByEmail($input["email"]) > 0){
+                    $this->sendError(
+                        "409 Conflict",
+                        "User with this email already exists"
+                    );
+                } else {
+                    $userModel->insertUser($input);
+                }
             } catch (Exception $e) {
                 $errorMessage = $e->getMessage().' Something went wrong! Please contact support.';
                 $errorCode = '500 Internal Server Error';
@@ -82,6 +92,73 @@ class UserController extends BaseController
     }
 
     /**
+     * "/users/login" Endpoint - Login
+     */
+    public function loginAction()
+    {
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        $errorMessage = '';
+        $errorCode = '';
+
+        if ($requestMethod == 'POST') {
+            try {
+                // get posted input
+                $input = json_decode(file_get_contents('php://input'), true);
+                if (empty($input['email']) || empty($input['password'])) {
+                    throw new Exception('Email and password are required');
+                }
+                $email = $input['email'];
+                $password = $input['password'];
+                // instantiate user object
+                $userModel = new UserModel();
+                // set product property values
+                if ($userModel->countUsersByEmail($email) > 0) {
+                    if (password_verify($password, $userModel->getUserPassword($email))) {
+                        $user = $userModel->getUser(email:$email);
+                        $token = generateToken($user);
+                        $this->sendOutput(
+                            json_encode(
+                                array(
+                                    'message' => 'User logged in successfully',
+                                    'token' => $token,
+                                    'user' => $user
+                                )
+                            ),
+                            array('Content-Type: application/json', 'HTTP/1.1 200 OK')
+                        );
+                    } else {
+                        $this->sendError(
+                            '401 Unauthorized',
+                            'The password is wrong for this email'
+                        );
+                    }
+                } else {
+                    $this->sendError(
+                        '400 Bad Request',
+                        'User with this email does not exist'
+                    );
+                }
+            } catch (Exception $e) {
+                $errorMessage = $e->getMessage().' Something went wrong! Please contact support.';
+                $errorCode = '500 Internal Server Error';
+            }
+        } else {
+            $errorMessage = 'Method not supported';
+            $errorCode = '422 Unprocessable Entity';
+        }
+
+        // send output
+        if ($errorMessage != '') {
+            $this->sendError($errorCode, $errorMessage);
+        } else {
+            $this->sendOutput(
+                json_encode(array('message' => 'User logged in successfully')),
+                array('Content-Type: application/json', 'HTTP/1.1 201 Created')
+            );
+        }
+    }
+
+    /**
      * "/users/update" Endpoint - Update a user
      */
     public function updateAction()
@@ -94,11 +171,10 @@ class UserController extends BaseController
 
         if ($requestMethod == 'PUT') {
             try {
-                $input = file_get_contents('php://input');
-                $input = array_values(json_decode($input, true));
+                $input = json_decode(file_get_contents('php://input'), true);
                 $userModel = new UserModel();
                 if (isset($arrQueryStringParams['id'])) {
-                    $user = $userModel->getUser($arrQueryStringParams['id']);
+                    $user = $userModel->getUser(id:$arrQueryStringParams['id']);
                     if (empty($user)) {
                         $this->sendError('404 Not Found', 'No data found');
                     } else {
@@ -139,7 +215,7 @@ class UserController extends BaseController
             try {
                 $userModel = new UserModel();
                 if (isset($arrQueryStringParams['id'])) {
-                    $user = $userModel->getUser($arrQueryStringParams['id']);
+                    $user = $userModel->getUser(id:$arrQueryStringParams['id']);
                     if (empty($user)) {
                         $this->sendError('404 Not Found', 'No data found');
                     } else {
