@@ -1,7 +1,6 @@
 <?php
 
 include_once PROJECT_ROOT_PATH . '/Utils/Token.php';
-
 class UserController extends BaseController
 {
 

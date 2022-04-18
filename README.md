@@ -1,4 +1,4 @@
-# Basho Blog Project
+# Basho Blog Project [Back-End]
 
 ## Introduction
 This repository contains the core for university project. The end goal is to craete blogging platform like Medium.
