@@ -18,4 +18,4 @@ During the project we will use following conventions for development:
 ## Editor & IDE Recommendations
 * [PhpStorm IDE for PHP Backend](https://www.jetbrains.com/phpstorm/)
 * [WebStorm IDE for JavaScript](https://www.jetbrains.com/webstorm/)
-* [VScode for general purpose](https://code.visualstudio.com/)
+* [VS Code for general purpose](https://code.visualstudio.com/)
